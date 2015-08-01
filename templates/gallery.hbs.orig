@@ -18,7 +18,7 @@
   <body>
 
     <header>
-      <a href="../archive.html">
+      <a href="index.html">
         <h1>{{title}}</h1>
         <h2>{{subtitle}}</h2>
       </a>
@@ -26,10 +26,6 @@
 
     <nav>
       <ul>
-        <li>
-          <a href="index.html">All {{subtitle}}</a>
-        </li>
-
         {{#each links}}
         <li {{#if active}}class="active"{{/if}}>
           <a href="{{url}}">{{name}}</a>
@@ -53,18 +49,16 @@
           </a>
         {{else}}
           <a href="{{urls.large}}"
-             data-download="{{urls.download}}"
-             title="{{mycaption}}" >
+             data-download="{{urls.download}}">
             <img src="{{urls.thumb}}"
                  width="{{size}}"
                  height="{{size}}"
-                 alt="{{mycaption}}" />
+                 alt="{{name}}" />
           </a>
         {{/if}}
       </li>{{/each}}
     </ul>
 
-<!-- add bluimp-gallery-controls to start with controls -->
     <div id="blueimp-gallery" class="blueimp-gallery">
         <div class="slides"></div>
         <h3 class="title"></h3>
@@ -73,6 +67,7 @@
         <a class="next">›</a>
         <a class="close">×</a>
         <a class="play-pause"></a>
+        <ol class="indicator"></ol>
     </div>
 
     <script src="public/blueimp/js/blueimp-gallery.min.js"></script>
@@ -85,29 +80,16 @@
         var target = event.target || event.srcElement,
             link = target.src ? target.parentNode : target,
             links = this.getElementsByTagName('a');
-        var gallery = blueimp.Gallery(links, {
+        blueimp.Gallery(links, {
           index: link,
-          startSlideshow: true,
-          slideshowInterval: 4000,
-          fullScreen: true,
           event: event,
           onslide: function (index, slide) {
             var anchor = this.container.find('.download');
             var url = this.list[index].getAttribute('data-download');
             anchor[0].href = url;
-          },
-          onslideend: function (index, slide) {
-
-            // Confirm this is a video file, and if so force it to play
-            if (this.list[index].getAttribute('type') == 'video/mp4') {
-
-              // Find the pause/play button on the video and force a click
-              slide.lastChild.lastChild.click();
-            }
           }
         });
       };
-
     </script>
 
     {{> analytics}}
