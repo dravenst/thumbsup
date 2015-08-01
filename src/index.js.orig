@@ -26,8 +26,7 @@ exports.build = function(opts) {
   }
 
   function copyFile(task, callback) {
-    //copy file only if timestamps are different
-    fs.copy(task.src, task.dest, {preserveTimestamps: true}, callback);
+    fs.copy(task.src, task.dest, callback);
   }
 
   async.series([
@@ -50,9 +49,7 @@ exports.build = function(opts) {
     buildStep({
       condition: opts.originalVideos,
       message: 'Original videos',
-      //Customized to only look for mp4 files
-      //ext:     'mp4|mov|mts|m2ts',
-      ext:     'mp4',
+      ext:     'mp4|mov|mts|m2ts',
       dest:    '/original/$path/$name.$ext',
       func:    copyFile
     }),
