@@ -29,7 +29,7 @@
   "dependencies": {
     "async": "^0.9.0",
     "exif-parser": "~0.1.6",
-    "fs-extra": "^0.12.0",
+    "fs-extra": "^0.22.1",
     "glob": "^4.3.0",
     "gm": "^1.17.0",
     "handlebars": "~2.0.0",
