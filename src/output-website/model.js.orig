@@ -11,15 +11,13 @@ var glob   = require('glob');
 exports.create = function(metadata, opts) {
 
   function fileInfo(data, file) {
-
     return {
       date: data.exif.date || data.fileDate,
       path: file,
       name: path.basename(file),
       video: data.mediaType === 'video',
       size: opts.thumbSize,
-      urls: urls(file, data),
-      mycaption: data.exif.mycaption
+      urls: urls(file, data)
     }
   }
 
@@ -37,23 +35,18 @@ exports.create = function(metadata, opts) {
 
   function videoUrls(file) {
     return {
-      thumb:     path.join('media', 'thumbs', ext(file, 'jpg')).replaceAll('\\','/'),
-      poster:    path.join('media', 'large',  ext(file, 'jpg')).replaceAll('\\','/'),
-      video:     path.join('media', 'large',  ext(file, 'mp4')).replaceAll('\\','/'),
-      original:  path.join('media', 'original', file).replaceAll('\\','/')
+      thumb:     'media/thumbs/' + ext(file, 'jpg'),
+      poster:    'media/large/' + ext(file, 'jpg'),
+      video:     'media/large/' + ext(file, 'mp4'),
+      original:  'media/original/' + file
     };
   }
 
-  String.prototype.replaceAll = function(str1, str2, ignore) 
-  {
-    return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
-  } 
-
   function photoUrls(file) {
     return {
-      thumb:     path.join('media', 'thumbs', file).replaceAll('\\','/'),
-      large:     path.join('media', 'large', file).replaceAll('\\','/'),
-      original:  path.join('media', 'original', file).replaceAll('\\','/')
+      thumb:     'media/thumbs/' + file,
+      large:     'media/large/' + file,
+      original:  'media/original/' + file
     };
   }
 
