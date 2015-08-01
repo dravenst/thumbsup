@@ -19,14 +19,7 @@ exports.common = function(opts) {
 /*
   Homepage data
 */
-exports.homepage = function(structure, index) {
-   var links = structure.map(function(folder, i) {
-    return {
-      name: folder.name,
-      url: folder.name + '.html',
-      active: (i === index)
-    };
-  });
+exports.homepage = function(structure) {
   var galleries = structure.map(function(folder) {
     return {
       name:     folder.name,
@@ -34,12 +27,10 @@ exports.homepage = function(structure, index) {
       stats:    stats(folder.media),
       fromDate: date(_.min(folder.media, 'date').date),
       toDate:   date(_.max(folder.media, 'date').date),
-      grid:     grid(folder.media),
-      media:    folder.media
+      grid:     grid(folder.media)
     };
   });
   return {
-    links: links,
     galleries: galleries
   };
 };
@@ -71,7 +62,7 @@ function stats(media) {
 }
 
 function date(timestamp) {
-  return moment(timestamp).format('MMM D YY');
+  return moment(timestamp).format('D MMM YY');
 }
 
 function grid(media) {
