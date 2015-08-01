@@ -41,9 +41,7 @@ exports.build = function(metadata, opts, callback) {
   function support(callback) {
     var src = path.join(__dirname, '..', '..', 'public');
     var dest = path.join(opts.output, 'public');
-
-    // copy the public directory over and preserve timestamps of the source
-    fs.copy(src, dest, {preserveTimestamps: true}, callback);
+    fs.copy(src, dest, callback);
   }
 
   function customStyle(callback) {
