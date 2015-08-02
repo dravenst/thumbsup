@@ -11,6 +11,8 @@ Build static HTML galleries from local photos & videos.
 - supports custom styles
 - uses relative paths so you can deploy the pages anywhere
 - works great with Amazon S3 for static hosting
+- This Fork adds: Photo Caption support (e.g. Picasa captions), consolidated homepage of photos, and other enhancements
+- This Fork also currently excludes video files except for mp4
 
 [View sample website](http://rprieto.github.io/thumbsup)
 
@@ -21,6 +23,7 @@ Build static HTML galleries from local photos & videos.
 - [Node.js](http://nodejs.org/): `brew install Node`
 - [GraphicsMagick](http://www.graphicsmagick.org/): `brew install graphicsmagick`
 - [FFmpeg](http://www.ffmpeg.org/): `brew install ffmpeg`
+- [ImageMagick] (http://www.imagemagick.org/script/index.php/): `brew install imagemagick`
 
 ## Input
 
