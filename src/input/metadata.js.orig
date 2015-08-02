@@ -6,6 +6,7 @@ var async       = require('async');
 var pad         = require('pad');
 var progress    = require('../utils/progress');
 var exif        = require('./exif');
+var util        = require('util');
 
 exports.update = function(opts, callback) {
 
@@ -27,7 +28,12 @@ exports.update = function(opts, callback) {
       nonull: false,
       nocase: true
     };
-    glob('**/*.{jpg,jpeg,png,mp4,mov,mts,m2ts}', globOptions, callback);
+    
+    //search for files but ignore additional subdirs, I wanted this to only look for mp4 videos and ignore others
+    //FUTURE TASK - make this an input variable
+    //orginal line
+    //glob('{,*/}*.{jpg,jpeg,png,mp4,mov,mts,m2ts}', globOptions, callback);
+    glob('{,*/}*.{jpg,jpeg,png,mp4}', globOptions, callback);
   }
 
   function pathAndDate(filePath, next) {
@@ -59,15 +65,33 @@ exports.update = function(opts, callback) {
 
   function metadata(fileInfo, callback) {
     exif.read(fileInfo.absolute, function(err, exifData) {
-      callback(null, {
-        path: fileInfo.relative,
-        fileDate: fileInfo.fileDate,
-        mediaType: mediaType(fileInfo),
-        exif: {
-          date: exifData ? exifData.date : null,
-          orientation: exifData ? exifData.orientation : null
-        }
-      });
+
+      // If we don't have any exif data passed in, populate accordingly
+      if (!exifData) {
+        callback(null, {
+          path: fileInfo.relative,
+          fileDate: fileInfo.fileDate,
+          mediaType: mediaType(fileInfo),
+          exif: {
+            date: fileInfo.fileDate,
+            orientation: null,
+            mycaption: ''
+          }
+        });
+      }
+      else
+      {
+        callback(null, {
+          path: fileInfo.relative,
+          fileDate: fileInfo.fileDate,
+          mediaType: mediaType(fileInfo),
+          exif: {
+            date: exifData[0] ? exifData[0].date : null,
+            orientation: exifData[0] ? exifData[0].orientation : null,
+            mycaption: exifData[1] ? exifData[1].mycaption : ''
+          }
+        });
+      }
     });
   }
 
@@ -82,23 +106,41 @@ exports.update = function(opts, callback) {
   findFiles(function(err, files) {
     var bar = progress.create('List all files', files.length);
     bar.tick(files.length);
-    async.map(files, pathAndDate, function (err, allFiles) {
+    async.mapLimit(files, 100, pathAndDate, function (err, allFiles) {
       var deleted = removeDeletedFiles(allFiles);
       var toProcess = allFiles.filter(newer);
       var count = toProcess.length;
       var bar = progress.create('Update metadata', count);
       if (count > 0) {
         bar.tick(0);
-        async.map(toProcess, function(fileInfo, next) {
+
+        async.mapLimit(toProcess, 50, function(fileInfo, next) {
           bar.tick();
+
+          // Add metadata to each file in the list
           metadata(fileInfo, next);
-        }, function(err, update) {
+        }, 
+
+        // Process array of files with updated metadata to remove path variable and remove no caption photos
+        function(err, update) {
           update.forEach(function(fileInfo) {
             existing[fileInfo.path] = _.omit(fileInfo, 'path');
+
+            // delete photos from list with no caption
+            if (   (fileInfo.exif.mycaption == '')
+                && (fileInfo.mediaType == 'photo'))
+            { 
+              delete existing[fileInfo.path];
+              //util.log("Deleting: " + util.inspect(fileInfo));
+            }
           });
+
+          // Capture json file of each of the photo we have looked at
           writeToDisk();
+
           callback(null, existing);
         });
+
       } else {
         bar.tick(1);
         if (deleted) writeToDisk();

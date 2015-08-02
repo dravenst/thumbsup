@@ -106,7 +106,7 @@ exports.update = function(opts, callback) {
   findFiles(function(err, files) {
     var bar = progress.create('List all files', files.length);
     bar.tick(files.length);
-    async.mapLimit(files, 100, pathAndDate, function (err, allFiles) {
+    async.mapLimit(files, 50, pathAndDate, function (err, allFiles) {
       var deleted = removeDeletedFiles(allFiles);
       var toProcess = allFiles.filter(newer);
       var count = toProcess.length;
