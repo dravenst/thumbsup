@@ -147,7 +147,7 @@ nav li:not(.active):hover {
 
 .blueimp-gallery > .download {
   position: absolute;
-  bottom: 30px;
+  top: 30px;
   left: 15px;
   color: #fff;
   display: none;
