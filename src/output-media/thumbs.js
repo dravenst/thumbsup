@@ -30,12 +30,12 @@ exports.photoLarge = function(task, callback) {
 
 // Web-streaming friendly video
 exports.videoWeb = function(task, callback) {
-  var ffmpeg = 'ffmpeg -i "' + task.src + '" -y "'+ task.dest +'" -f mp4 -vcodec libx264 -ab 96k';
-  // AVCHD/MTS videos need a full-frame export to avoid interlacing artefacts
+  var ffmpeg = 'ffmpeg -i "' + task.src + '" -y "'+ task.dest +'" -f mp4 -codec:v libx264 -profile:v high -preset slow -b:a 96k';
+  // AVCHD/MTS videos need a full-frame export to avoid interlacing artifacts
   if (path.extname(task.src).toLowerCase() === '.mts') {
     ffmpeg += ' -vf yadif=1 -qscale:v 4';
   } else {
-    ffmpeg += ' -vb 1200k';
+    ffmpeg += ' -b:v 1200k';
   }
   exec(ffmpeg, callback);
 };
