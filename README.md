@@ -83,7 +83,7 @@ And you can optionally specify:
 - `--google-analytics [code]` code for Google Analytics tracking (no default)
 - `--video-extensions [text]` extensions for video files to include (default: `mp4,mov,mts,m2ts`)
 - `--photo-extensions [text]` extensions for photo files to include (default: `jpg,jpeg,png`)
-- `--photos-caption-only [true|false] to only include photos that have a caption (default: `false`)
+- `--photos-caption-only [true|false]` to only include photos that have a caption (default: `false`)
 
 *Note:* all paths are relative to the current working directory.
 For example:
@@ -114,7 +114,7 @@ thumbsup --config config.json
   "google-analytics": "UA-999999-9",
   "video-extensions": "mp4",
   "photo-extensions": "jpg",
-  "photos-cpation-only": false
+  "photos-caption-only": false
 }
 ```
 
