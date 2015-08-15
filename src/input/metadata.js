@@ -22,18 +22,16 @@ exports.update = function(opts, callback) {
     existingDate = 0;
   }
 
-  function findFiles(callback) {
+  function findFiles(opts, callback) {
     var globOptions = {
       cwd: opts.input,
       nonull: false,
       nocase: true
     };
     
-    //search for files but ignore additional subdirs, I wanted this to only look for mp4 videos and ignore others
-    //FUTURE TASK - make this an input variable
-    //orginal line
-    //glob('{,*/}*.{jpg,jpeg,png,mp4,mov,mts,m2ts}', globOptions, callback);
-    glob('{,*/}*.{jpg,jpeg,png,mp4}', globOptions, callback);
+    //search for files but ignore additional subdirs, use input params to determine extensions
+    var searchExt = "{,*/}*.{" + opts.photoExtensions + "," + opts.videoExtensions + "}";
+    glob(searchExt, globOptions, callback);
   }
 
   function pathAndDate(filePath, next) {
@@ -103,7 +101,7 @@ exports.update = function(opts, callback) {
     fs.writeFileSync(metadataPath, JSON.stringify(existing, null, '  '));
   }
 
-  findFiles(function(err, files) {
+  findFiles(opts, function(err, files) {
     var bar = progress.create('List all files', files.length);
     bar.tick(files.length);
     async.mapLimit(files, 50, pathAndDate, function (err, allFiles) {
@@ -126,13 +124,16 @@ exports.update = function(opts, callback) {
           update.forEach(function(fileInfo) {
             existing[fileInfo.path] = _.omit(fileInfo, 'path');
 
-            // delete photos from list with no caption
-            if (   (fileInfo.exif.mycaption == '')
-                && (fileInfo.mediaType == 'photo'))
-            { 
-              delete existing[fileInfo.path];
-              //util.log("Deleting: " + util.inspect(fileInfo));
-            }
+            // delete photos from list with no caption if caption only setting
+            if (opts.photosCaption)
+            {
+              if (   (fileInfo.exif.mycaption == '')
+                  && (fileInfo.mediaType == 'photo'))
+              { 
+                delete existing[fileInfo.path];
+                //util.log("Deleting: " + util.inspect(fileInfo));
+              }
+          }
           });
 
           // Capture json file of each of the photo we have looked at

@@ -12,7 +12,7 @@ Build static HTML galleries from local photos & videos.
 - uses relative paths so you can deploy the pages anywhere
 - works great with Amazon S3 for static hosting
 - This Fork adds: Photo Caption support (e.g. Picasa captions), consolidated homepage of photos, and other enhancements
-- This Fork also currently excludes video files except for mp4
+- This Fork also enables filtering of video and photo file types
 
 [View sample website](http://rprieto.github.io/thumbsup)
 
@@ -81,12 +81,15 @@ And you can optionally specify:
 - `--sort-folders [name|date]` how to sort the folders/galleries (default: `date`)
 - `--css [file]` styles to be applied on top of the default theme (no default)
 - `--google-analytics [code]` code for Google Analytics tracking (no default)
+- `--video-extensions [text]` extensions for video files to include (default: `mp4,mov,mts,m2ts`)
+- `--photo-extensions [text]` extensions for photo files to include (default: `jpg,jpeg,png`)
+- `--photos-caption-only [true|false] to only include photos that have a caption (default: `false`)
 
 *Note:* all paths are relative to the current working directory.
 For example:
 
 ```bash
-thumbsup --input "/media/photos" --output "./website" --title "My holidays" --thumb-size 200 --large-size 1500 --full-size-photos true --sort-folders date --css "./custom.css" --google-analytics "UA-999999-9"
+thumbsup --input "/media/photos" --output "./website" --title "My holidays" --thumb-size 200 --large-size 1500 --full-size-photos true --sort-folders date --css "./custom.css" --google-analytics "UA-999999-9" --video-extensions "mp4" --photo-extensions "jpg" --photos-caption-only false
 ```
 
 You can also save all your arguments to a `JSON` file:
@@ -108,7 +111,10 @@ thumbsup --config config.json
   "original-videos": false,
   "sort-folders": "date",
   "css": "./custom.css",
-  "google-analytics": "UA-999999-9"
+  "google-analytics": "UA-999999-9",
+  "video-extensions": "mp4",
+  "photo-extensions": "jpg",
+  "photos-cpation-only": false
 }
 ```
 

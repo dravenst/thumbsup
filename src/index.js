@@ -42,7 +42,7 @@ exports.build = function(opts) {
     buildStep({
       condition: opts.originalPhotos,
       message: 'Original photos',
-      ext:     'jpg|jpeg|png',
+      ext:     replaceAll(opts.photoExtensions,',', '|'),      
       dest:    '/original/$path/$name.$ext',
       func:    copyFile
     }),
@@ -50,44 +50,42 @@ exports.build = function(opts) {
     buildStep({
       condition: opts.originalVideos,
       message: 'Original videos',
-      //Customized to only look for mp4 files
-      //ext:     'mp4|mov|mts|m2ts',
-      ext:     'mp4',
+      ext:     replaceAll(opts.videoExtensions,',', '|'),
       dest:    '/original/$path/$name.$ext',
       func:    copyFile
     }),
 
     buildStep({
       message: 'Photos (large)',
-      ext:     'jpg|jpeg|png',
+      ext:     replaceAll(opts.photoExtensions,',', '|'),      
       dest:    '/large/$path/$name.$ext',
       func:    thumbs.photoLarge
     }),
 
     buildStep({
       message: 'Photos (thumbs)',
-      ext:     'jpg|jpeg|png',
+      ext:     replaceAll(opts.photoExtensions,',', '|'),      
       dest:    '/thumbs/$path/$name.$ext',
       func:    thumbs.photoSquare
     }),
 
     buildStep({
       message: 'Videos (resized)',
-      ext:     'mp4|mov|mts|m2ts',
+      ext:     replaceAll(opts.videoExtensions,',', '|'),
       dest:    '/large/$path/$name.mp4',
       func:    thumbs.videoWeb
     }),
 
     buildStep({
       message: 'Videos (poster)',
-      ext:     'mp4|mov|mts|m2ts',
+      ext:     replaceAll(opts.videoExtensions,',', '|'),
       dest:    '/large/$path/$name.jpg',
       func:    thumbs.videoLarge
     }),
 
     buildStep({
       message: 'Videos (thumbs)',
-      ext:     'mp4|mov|mts|m2ts',
+      ext:     replaceAll(opts.videoExtensions,',', '|'),
       dest:    '/thumbs/$path/$name.jpg',
       func:    thumbs.videoSquare
     }),
@@ -105,4 +103,12 @@ function finish(err) {
   console.log(err || 'Gallery generated successfully');
   console.log();
   process.exit(err ? 1 : 0)
+}
+
+function escapeRegExp(string) {
+    return string.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+function replaceAll(string, find, replace) {
+  return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }

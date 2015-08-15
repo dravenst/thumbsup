@@ -45,6 +45,18 @@ var opts = yargs
     },
     'google-analytics': {
       description: 'Code for Google Analytics tracking'
+    },
+    'video-extensions': {
+      description: 'Extensions for video files to include',
+      default: 'mp4,mov,mts,m2ts'
+    },
+    'photo-extensions': {
+      description: 'Extensions for photo files to include',
+      default: 'jpg,jpeg,png'
+    },
+    'photos-caption-only': {
+      description: 'Only include photos that have a caption',
+      default: false
     }
   })
   .config('config')
@@ -61,5 +73,8 @@ index.build({
   originalVideos:  opts['original-videos'] + '' === 'true',
   sortFolders:     opts['sort-folders'],
   css:             opts['css'],
-  googleAnalytics: opts['google-analytics']
+  googleAnalytics: opts['google-analytics'],
+  videoExtensions: opts['video-extensions'],
+  photoExtensions: opts['photo-extensions'],
+  photosCaption:   opts['photos-caption-only'] + '' === 'true'
 });

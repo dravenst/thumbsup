@@ -18,12 +18,12 @@ var FFPROBE_DATE   = /creation_time\s*:\s*(.*)\n/;
 var FFPROBE_ROTATE = /rotate\s*:\s*(.*)\n/;
 
 exports.read = function(filePath, callback) {
-  if (filePath.match(/\.(jpg|jpeg)$/i)) {
+  if (filePath.match(/\.(jpg|jpeg|png)$/i)) {
     photo(filePath, callback);
-  } else if (filePath.match(/\.(mp4|mov|mts)$/i)) {
+  } else if (filePath.match(/\.(mp4|mov|mts|m2ts)$/i)) {
     video(filePath, callback);
   } else {
-    callback(new Error('Unknown format'));
+    callback(new Error('Unknown format: '+ filePath));
   }
 };
 
