@@ -30,14 +30,11 @@ exports.photoLarge = function(task, callback) {
 
 // Web-streaming friendly video
 exports.videoWeb = function(task, callback) {
-  var ffmpeg = 'ffmpeg -i "' + task.src + '" -y "'+ task.dest +'" -f mp4 -codec:v libx264 -profile:v high -preset slow -b:a 96k';
-  // AVCHD/MTS videos need a full-frame export to avoid interlacing artifacts
-  if (path.extname(task.src).toLowerCase() === '.mts') {
-    ffmpeg += ' -vf yadif=1 -qscale:v 4';
-  } else {
-    ffmpeg += ' -b:v 1200k';
-  }
-  exec(ffmpeg, callback);
+
+  // Variable bit rate settings, quality 22, 720p max, compatible with ipad 2+
+  var ffmpeg = 'ffmpeg -y -i "' + task.src +'" -codec:v libx264 -movflags +faststart -preset veryslow -crf 22 -b:a 64k -vf fps=29.97,scale=1280:-1 -profile:v high -level 4.1 -f mp4 "' + task.dest +'"';
+
+  exec(ffmpeg, {maxBuffer : 500 * 1024}, callback);
 };
 
 // Large video preview (before you click play)

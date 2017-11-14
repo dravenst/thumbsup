@@ -3,6 +3,7 @@ var path        = require('path');
 var pad         = require('pad');
 var async       = require('async');
 var progress    = require('./progress');
+var util        = require('util');
 
 exports.exec = function(input, output, metadata, options, callback) {
   var message = pad(options.message, 20)
@@ -16,9 +17,16 @@ exports.exec = function(input, output, metadata, options, callback) {
   });
   var process = tasks.filter(function(task) {
     try {
-      var destDate = fs.statSync(task.dest).ctime.getTime();
+      var destDate = fs.statSync(task.dest).mtime.getTime();
+
+//      util.log("FILE CHECK 2: " + task.dest + " DESTDATE: " + destDate + " SOURCEDATE: " + task.metadata.fileDate + " NEWER?: " + (task.metadata.fileDate > destDate));      
+
       return task.metadata.fileDate > destDate;
     } catch (ex) {
+
+
+//    util.log("EXCEPTION: " + util.inspect(ex) + " TASK: " + util.inspect(task));
+
       return true;
     }
   });

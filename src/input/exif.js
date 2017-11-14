@@ -14,8 +14,9 @@ var ROTATION_TABLE = {
   '270': 8
 };
 
-var FFPROBE_DATE   = /creation_time\s*:\s*(.*)\n/;
-var FFPROBE_ROTATE = /rotate\s*:\s*(.*)\n/;
+// Removed newline from this regexp since it caused issues in windows
+var FFPROBE_DATE   = /creation_time\s*:\s*(.*)/;
+var FFPROBE_ROTATE = /rotate\s*:\s*(.*)/;
 
 exports.read = function(filePath, callback) {
   if (filePath.match(/\.(jpg|jpeg|png)$/i)) {
@@ -76,6 +77,7 @@ function video(filePath, callback) {
   exec(ffprobe, function(err, stdout, stderr) {
     var dateMatch = FFPROBE_DATE.exec(stderr);
     var rotateMatch = FFPROBE_ROTATE.exec(stderr);
+
     callback(null, {
       date: dateMatch ? Date.parse(dateMatch[1]) : null,
       orientation: rotateMatch ? ROTATION_TABLE[rotateMatch[1]] : null

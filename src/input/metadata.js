@@ -40,7 +40,8 @@ exports.update = function(opts, callback) {
       next(null, {
         absolute: absolute,
         relative: filePath,
-        fileDate: Math.max(stats.ctime.getTime(), stats.mtime.getTime())
+        fileDate: stats.mtime.getTime()
+        //fileDate: Math.max(stats.ctime.getTime(), stats.mtime.getTime())
       });
     });
   }
@@ -48,6 +49,8 @@ exports.update = function(opts, callback) {
   function newer(fileInfo) {
     var found = existing[fileInfo.relative];
     if (!found) return true;
+    //util.log("File: " + util.inspect(fileInfo) + "Newer? " + (fileInfo.fileDate > existingDate));
+
     return fileInfo.fileDate > existingDate;
   }
 
