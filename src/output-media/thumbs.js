@@ -2,6 +2,7 @@ var exec    = require('child_process').exec;
 var path    = require('path');
 var gm      = require('gm');
 var async   = require('async');
+var util        = require('util');
 
 exports.sizes = {
   thumb: 120,
@@ -32,6 +33,7 @@ exports.photoLarge = function(task, callback) {
 exports.videoWeb = function(task, callback) {
 
   // Variable bit rate settings, quality 22, 720p max, compatible with ipad 2+
+  // Constant rate quality setting is better than two pass for quality of video
   var ffmpeg = 'ffmpeg -y -i "' + task.src +'" -codec:v libx264 -movflags +faststart -preset veryslow -crf 22 -b:a 64k -vf fps=29.97,scale=1280:-1 -profile:v high -level 4.1 -f mp4 "' + task.dest +'"';
 
   exec(ffmpeg, {maxBuffer : 500 * 1024}, callback);
