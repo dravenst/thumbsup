@@ -1,4 +1,5 @@
-var _ = require('lodash');
+var ld = require('lodash');
+var _  = ld.noConflict();
 var path = require('path');
 var moment = require('moment');
 

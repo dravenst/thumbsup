@@ -1,4 +1,5 @@
-var _      = require('lodash');
+var ld     = require('lodash');
+var _      = ld.noConflict();
 var fs     = require('fs');
 var path   = require('path');
 var glob   = require('glob');
