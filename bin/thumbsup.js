@@ -50,6 +50,10 @@ var opts = yargs
       description: 'Extensions for video files to include',
       default: 'mp4,mov,mts,m2ts'
     },
+    'video-conversion': {
+      description: 'Whether to convert video to 720p (or just copy video files)',
+      default: false
+    },
     'photo-extensions': {
       description: 'Extensions for photo files to include',
       default: 'jpg,jpeg,png'
@@ -76,5 +80,6 @@ index.build({
   googleAnalytics: opts['google-analytics'],
   videoExtensions: opts['video-extensions'],
   photoExtensions: opts['photo-extensions'],
-  photosCaption:   opts['photos-caption-only'] + '' === 'true'
+  photosCaption:   opts['photos-caption-only'] + '' === 'true',
+  videoConversion: opts['video-conversion'] + '' === 'true'
 });

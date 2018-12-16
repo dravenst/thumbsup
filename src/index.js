@@ -5,6 +5,7 @@ var make        = require('./utils/make');
 var metadata    = require('./input/metadata');
 var thumbs      = require('./output-media/thumbs');
 var website     = require('./output-website/generator');
+var util        = require('util');
 
 exports.build = function(opts) {
 
@@ -17,6 +18,9 @@ exports.build = function(opts) {
 
   function buildStep(options) {
     return function(callback) {
+//      util.log("CONDITION = " + util.inspect(options)); 
+//      util.log("OPTIONS=" + util.inspect(opts));
+
       if (options.condition !== false) {
         make.exec(opts.input, media, meta, options, callback);
       } else {
@@ -70,10 +74,19 @@ exports.build = function(opts) {
     }),
 
     buildStep({
+      condition: opts.videoConversion,
       message: 'Videos (resized)',
       ext:     replaceAll(opts.videoExtensions,',', '|'),
       dest:    '/large/$path/$name.mp4',
       func:    thumbs.videoWeb
+    }),
+
+    buildStep({
+      condition: (!opts.videoConversion),
+      message: 'Videos (copy)',
+      ext:     replaceAll(opts.videoExtensions,',', '|'),
+      dest:    '/large/$path/$name.mp4',
+      func:    copyFile
     }),
 
     buildStep({

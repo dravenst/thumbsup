@@ -19,13 +19,13 @@ exports.exec = function(input, output, metadata, options, callback) {
     try {
       var destDate = fs.statSync(task.dest).mtime.getTime();
 
-//      util.log("FILE CHECK 2: " + task.dest + " DESTDATE: " + destDate + " SOURCEDATE: " + task.metadata.fileDate + " NEWER?: " + (task.metadata.fileDate > destDate));      
+      //util.log("FILE CHECK 2: " + task.dest + " DESTDATE: " + destDate + " SOURCEDATE: " + task.metadata.fileDate + " NEWER?: " + (task.metadata.fileDate > destDate));      
 
       return task.metadata.fileDate > destDate;
     } catch (ex) {
 
 
-//    util.log("EXCEPTION: " + util.inspect(ex) + " TASK: " + util.inspect(task));
+    //util.log("EXCEPTION: " + util.inspect(ex) + " TASK: " + util.inspect(task));
 
       return true;
     }

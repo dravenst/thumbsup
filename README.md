@@ -82,6 +82,7 @@ And you can optionally specify:
 - `--css [file]` styles to be applied on top of the default theme (no default)
 - `--google-analytics [code]` code for Google Analytics tracking (no default)
 - `--video-extensions [text]` extensions for video files to include (default: `mp4,mov,mts,m2ts`)
+- `--video-conversion [true|false]` whether to convert videos or just copy (default: `false`)
 - `--photo-extensions [text]` extensions for photo files to include (default: `jpg,jpeg,png`)
 - `--photos-caption-only [true|false]` to only include photos that have a caption (default: `false`)
 
