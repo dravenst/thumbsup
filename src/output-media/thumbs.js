@@ -1,6 +1,6 @@
 var fs      = require('fs-extra');
 var path    = require('path');
-var gm      = require('gm');
+var gm      = require('gm').subClass({ imageMagick: true });
 var async   = require('async');
 var util    = require('util');
 var exec    = require('child_process').exec;
