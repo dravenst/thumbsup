@@ -1,6 +1,6 @@
 var fs      = require('fs-extra');
 var path    = require('path');
-var gm      = require('gm');
+var gm      = require('gm').subClass({ imageMagick: true });
 var async   = require('async');
 var util    = require('util');
 var exec    = require('child_process').exec;
@@ -73,7 +73,7 @@ exports.videoSquare = function(task, callback) {
 };
 
 function extractFrame(task, callback) {
-  var ffmpeg = 'ffmpeg -itsoffset -1 -i "' + task.src + '" -ss 0.1 -vframes 1 -y "' + task.dest + '"';
+  var ffmpeg = 'ffmpeg -itsoffset -1 -i "' + task.src + '" -ss 0.1 -vframes 1 -q:v 2 "' + task.dest + '"';
   exec(ffmpeg, callback);
 }
 
