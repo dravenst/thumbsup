@@ -35,7 +35,9 @@ exports.videoWeb = function(task, callback) {
 
   // Variable bit rate settings, quality 22, 720p max, compatible with ipad 2+
   // Constant rate quality setting is better than two pass for quality of video
-  var ffmpeg = 'ffmpeg -y -i "' + task.src +'" -codec:v libx264 -movflags +faststart -preset veryslow -crf 22 -b:a 64k -vf fps=29.97,scale=1280:-1 -profile:v high -level 4.1 -f mp4 "' + task.dest +'"';
+
+  //var ffmpeg = 'ffmpeg -y -i "' + task.src +'" -codec:v libx264 -movflags +faststart -preset veryslow -crf 22 -b:a 64k -vf fps=29.97,scale=1280:-1 -profile:v high -level 4.1 -f mp4 "' + task.dest +'"';
+  var ffmpeg = 'ffmpeg -y -hwaccel vaapi -hwaccel_output_format vaapi -hwaccel_device /dev/dri/renderD128 -i "' + task.src +'" -vcodec h264_vaapi -movflags +faststart -preset veryslow -crf 22 -b:a 64k -vf fps=29.97,scale_vaapi=1280:-1 -profile:v high -level 4.1 -f mp4 "' + task.dest +'"';
   
   exec(ffmpeg, {maxBuffer : 500 * 1024}, callback);
 };
@@ -73,7 +75,7 @@ exports.videoSquare = function(task, callback) {
 };
 
 function extractFrame(task, callback) {
-  var ffmpeg = 'ffmpeg -itsoffset -1 -i "' + task.src + '" -ss 0.1 -vframes 1 -y "' + task.dest + '"';
+  var ffmpeg = 'ffmpeg -itsoffset -1 -i "' + task.src + '" -ss 0.1 -vframes 1 -q:v 2 "' + task.dest + '"';
   exec(ffmpeg, callback);
 }
 
