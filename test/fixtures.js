@@ -65,12 +65,34 @@ exports.fromDisk = function (filename) {
 
 exports.createTempStructure = function (files) {
   const tmpdir = tmp.dirSync({ unsafeCleanup: true }).name
-  _.each(files, (content, filepath) => {
-    const folder = path.dirname(`${tmpdir}/${filepath}`)
-    fs.mkdirSync(folder, { recursive: true })
-    fs.writeFileSync(`${tmpdir}/${filepath}`, content)
-  })
+  writeFiles(tmpdir, files)
   return tmpdir
+}
+
+// Runs each test of the current <describe> block inside its own empty temporary folder,
+// so tests can create and read files using relative paths
+exports.useTempCwd = function () {
+  let originalCwd = null
+  beforeEach(() => {
+    originalCwd = process.cwd()
+    process.chdir(tmp.dirSync({ unsafeCleanup: true }).name)
+  })
+  afterEach(() => {
+    process.chdir(originalCwd)
+  })
+}
+
+// Creates files relative to the current folder, e.g. { 'media/IMG_0001.jpg': '...' }
+exports.createFiles = function (files) {
+  writeFiles('.', files)
+}
+
+function writeFiles (root, files) {
+  _.each(files, (content, filepath) => {
+    const fullpath = path.join(root, filepath)
+    fs.mkdirSync(path.dirname(fullpath), { recursive: true })
+    fs.writeFileSync(fullpath, content)
+  })
 }
 
 exports.deleteTempFile = function (tmpdir, filepath) {

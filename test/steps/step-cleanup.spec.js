@@ -8,16 +8,13 @@ const fixtures = require('../fixtures')
 const ospath = fixtures.ospath
 
 describe('Steps: cleanup', () => {
-  // we require "mock-fs" inside the tests, otherwise it also affects other tests
-  let mock = null
+  fixtures.useTempCwd()
 
   beforeEach(() => {
-    mock = require('mock-fs')
     sinon.stub(fs, 'unlinkSync')
   })
 
   afterEach(() => {
-    mock.restore()
     fs.unlinkSync.restore()
   })
 
@@ -26,7 +23,7 @@ describe('Steps: cleanup', () => {
       fixtures.file({ path: 'paris/IMG_0001.jpg' }),
       fixtures.file({ path: 'london/IMG_0002.jpg' })
     ]
-    mock({
+    fixtures.createFiles({
       'output/media/thumbs/paris/IMG_0001.jpg': '',
       'output/media/thumbs/london/IMG_0002.jpg': '',
       'output/media/small/paris/IMG_0001.jpg': '',
@@ -47,7 +44,7 @@ describe('Steps: cleanup', () => {
       fixtures.file({ path: 'paris/IMG_0001.jpg' }),
       fixtures.file({ path: 'london/IMG_0002.jpg' })
     ]
-    mock({
+    fixtures.createFiles({
       'output/media/large/paris/IMG_0001.jpg': '',
       'output/media/large/london/IMG_0002.jpg': '',
       'output/media/large/newyork/IMG_0003.jpg': ''
@@ -67,7 +64,7 @@ describe('Steps: cleanup', () => {
       fixtures.file({ path: 'paris/IMG_0001.jpg' }),
       fixtures.file({ path: 'london/IMG_0002.jpg' })
     ]
-    mock({
+    fixtures.createFiles({
       'output/media/large/paris/IMG_0001.jpg': '',
       'output/media/large/london/IMG_0002.jpg': '',
       'output/media/large/newyork/IMG_0003.jpg': ''

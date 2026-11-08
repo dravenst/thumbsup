@@ -5,18 +5,10 @@ const fixtures = require('../fixtures')
 const Theme = require('../../src/website/theme')
 
 describe('Theme', () => {
-  // we require "mock-fs" inside the tests, otherwise it also affects other tests
-  let mock = null
-  beforeEach(() => {
-    mock = require('mock-fs')
-  })
-
-  afterEach(() => {
-    mock.restore()
-  })
+  fixtures.useTempCwd()
 
   it('uses the target theme folder by default', testEnd => {
-    mock({
+    fixtures.createFiles({
       'theme/album.hbs': '',
       'theme/theme.less': ''
     })
@@ -32,7 +24,7 @@ describe('Theme', () => {
     // 1. this is useful when a packaged theme uses a build process
     // since the build result will be in a subfolder, and npm only allows publishing the root folder
     // 2. it's also useful if someone just wants to keep the theme repo clean using folders
-    mock({
+    fixtures.createFiles({
       'theme/package.json': `{
         "thumbsup": {
           "themeRoot": "dist"
@@ -53,7 +45,7 @@ describe('Theme', () => {
     // 1. this is useful when a packaged theme uses a build process
     // since the build result will be in a subfolder, and npm only allows publishing the root folder
     // 2. it's also useful if someone just wants to keep the theme repo clean using folders
-    mock({
+    fixtures.createFiles({
       'theme/package.json': `{
         "thumbsup": {
           "themeRoot": ""
@@ -71,7 +63,7 @@ describe('Theme', () => {
   })
 
   it('throws an error if it doesnt have the mandatory HBS template', () => {
-    mock({
+    fixtures.createFiles({
       'theme/theme.less': ''
     })
     const theme = new Theme('theme', 'dest', {})
@@ -79,7 +71,7 @@ describe('Theme', () => {
   })
 
   it('throws an error if it doesnt have the mandatory LESS stylesheet', () => {
-    mock({
+    fixtures.createFiles({
       'theme/album.hbs': ''
     })
     const theme = new Theme('theme', 'dest', {})
@@ -87,7 +79,7 @@ describe('Theme', () => {
   })
 
   it('renders the main CSS file', testEnd => {
-    mock({
+    fixtures.createFiles({
       'theme/theme.less': '@color: #abc; body { color: @color; }',
       'theme/album.hbs': ''
     })
@@ -101,7 +93,7 @@ describe('Theme', () => {
   })
 
   it('returns an error if the main LESS file is invalid', testEnd => {
-    mock({
+    fixtures.createFiles({
       'theme/theme.less': 'body color = red',
       'theme/album.hbs': ''
     })
@@ -114,7 +106,7 @@ describe('Theme', () => {
   })
 
   it('can include an extra CSS files (unprocessed)', testEnd => {
-    mock({
+    fixtures.createFiles({
       'theme/theme.less': 'body { color: red; }',
       'theme/other.css': 'h1 { color: blue; }',
       'theme/album.hbs': ''
@@ -133,7 +125,7 @@ describe('Theme', () => {
   })
 
   it('can include an extra LESS file', testEnd => {
-    mock({
+    fixtures.createFiles({
       'theme/theme.less': 'body { color: red; }',
       'theme/other.less': 'h1 { color: blue; }',
       'theme/album.hbs': ''
@@ -150,7 +142,7 @@ describe('Theme', () => {
   })
 
   it('renders the main HTML file', testEnd => {
-    mock({
+    fixtures.createFiles({
       'theme/theme.less': '',
       'theme/album.hbs': 'Welcome to {{album.title}}'
     })
@@ -164,7 +156,7 @@ describe('Theme', () => {
   })
 
   it('loads all partials', testEnd => {
-    mock({
+    fixtures.createFiles({
       'theme/theme.less': '',
       'theme/album.hbs': 'Partial says {{>hello}}',
       'theme/partials/hello.hbs': 'hello world'
@@ -179,7 +171,6 @@ describe('Theme', () => {
   })
 
   it('loads all helpers', testEnd => {
-    // because helpers use require(...) we cannot use a mock filesystem
     const tmpdir = fixtures.createTempStructure({
       'theme/theme.less': '',
       'theme/album.hbs': 'Partial says {{hello "world"}}',
@@ -195,7 +186,6 @@ describe('Theme', () => {
   })
 
   it('loads require() statements relative to the theme folder', testEnd => {
-    // because helpers use require(...) we cannot use a mock filesystem
     const tmpdir = fixtures.createTempStructure({
       'theme/theme.less': '',
       'theme/album.hbs': 'Partial says {{hello "world"}}',
@@ -216,7 +206,6 @@ describe('Theme', () => {
   })
 
   it('copies public files', testEnd => {
-    // fs.copy() doesn't seem compatible with mock-fs either
     const tmpdir = fixtures.createTempStructure({
       'theme/theme.less': '',
       'theme/album.hbs': '',

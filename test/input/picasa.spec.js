@@ -2,6 +2,7 @@ const fs = require('node:fs')
 const sinon = require('sinon')
 const should = require('should/as-function')
 const Picasa = require('../../src/input/picasa.js')
+const fixtures = require('../fixtures')
 
 const PICASA_INI = `
 [Picasa]
@@ -14,19 +15,10 @@ keywords=beach,sunset
 `
 
 describe('Picasa', function () {
-  // we require "mock-fs" inside the tests, otherwise it also affects other tests
-  let mock = null
-
-  beforeEach(function () {
-    mock = require('mock-fs')
-  })
-
-  afterEach(function () {
-    mock.restore()
-  })
+  fixtures.useTempCwd()
 
   it('reads album metadata', function () {
-    mock({
+    fixtures.createFiles({
       'holidays/picasa.ini': PICASA_INI
     })
     const picasa = new Picasa()
@@ -41,7 +33,7 @@ describe('Picasa', function () {
     should(meta).eql(null)
   })
   it('returns <null> if the Picasa file is invalid', function () {
-    mock({
+    fixtures.createFiles({
       'holidays/picasa.ini': '[[invalid'
     })
     const picasa = new Picasa()
@@ -49,7 +41,7 @@ describe('Picasa', function () {
     should(meta).eql(null)
   })
   it('returns raw file metadata as read from the INI file', function () {
-    mock({
+    fixtures.createFiles({
       'holidays/picasa.ini': PICASA_INI
     })
     const picasa = new Picasa()
@@ -61,7 +53,7 @@ describe('Picasa', function () {
     })
   })
   it('can read metadata of a file with several dots in the name', function () {
-    mock({
+    fixtures.createFiles({
       'holidays/picasa.ini': '[IMG.0001.small.jpg]\ncaption=dots'
     })
     const picasa = new Picasa()
@@ -71,7 +63,7 @@ describe('Picasa', function () {
     })
   })
   it('returns <null> if a file has no metadata', function () {
-    mock({
+    fixtures.createFiles({
       'holidays/picasa.ini': PICASA_INI
     })
     const picasa = new Picasa()
@@ -79,7 +71,7 @@ describe('Picasa', function () {
     should(meta).eql(null)
   })
   it('only reads the file from disk once', function () {
-    mock({
+    fixtures.createFiles({
       'holidays/picasa.ini': PICASA_INI
     })
     sinon.spy(fs, 'readFileSync')
@@ -89,5 +81,6 @@ describe('Picasa', function () {
     picasa.file('holidays/IMG_0001.jpg')
     picasa.file('holidays/IMG_0002.jpg')
     should(fs.readFileSync.callCount).eql(1)
+    fs.readFileSync.restore()
   })
 })

@@ -4,27 +4,13 @@ const os = require('node:os')
 const should = require('should/as-function')
 const tmp = require('tmp')
 const glob = require('../../../src/components/index/glob')
+const fixtures = require('../../fixtures')
 
 describe('Index: glob', function () {
   this.slow(500)
   this.timeout(500)
 
-  // we require "mock-fs" inside the tests, otherwise it also affects other tests
-  let mock = null
-  beforeEach(() => {
-    mock = require('mock-fs')
-  })
-
-  afterEach(() => {
-    mock.restore()
-  })
-
-  it('bootstraps micromatch', () => {
-    // This is a workaround for https://github.com/tschaub/mock-fs/issues/213
-    // Because micromatch() loads packages dynamically which doesn't work if the filesystem is being mocked
-    // So we need to pre-load them now
-    require('micromatch').match('file.txt', '**/**')
-  })
+  fixtures.useTempCwd()
 
   it('can include photo extensions', () => {
     const ext = glob.supportedExtensions({ includePhotos: true, includeVideos: false, includeRawPhotos: false })
@@ -48,7 +34,7 @@ describe('Index: glob', function () {
   })
 
   it('lists all images by default', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/IMG_0001.jpg': '...',
       'media/IMG_0002.jpg': '...'
     })
@@ -60,7 +46,7 @@ describe('Index: glob', function () {
   })
 
   it('can list nested images', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/2016/June/IMG_0001.jpg': '...',
       'media/2017/IMG_0002.jpg': '...'
     })
@@ -72,7 +58,7 @@ describe('Index: glob', function () {
   })
 
   it('includes photos and videos by default', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/IMG_0001.jpg': '...',
       'media/IMG_0002.mp4': '...'
     })
@@ -84,7 +70,7 @@ describe('Index: glob', function () {
   })
 
   it('can exclude photos', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/IMG_0001.jpg': '...',
       'media/IMG_0002.mp4': '...'
     })
@@ -95,7 +81,7 @@ describe('Index: glob', function () {
   })
 
   it('can excludes videos', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/IMG_0001.jpg': '...',
       'media/IMG_0002.mp4': '...'
     })
@@ -106,7 +92,7 @@ describe('Index: glob', function () {
   })
 
   it('can include raw photos', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/IMG_0001.jpg': '...',
       'media/IMG_0002.cr2': '...'
     })
@@ -118,7 +104,7 @@ describe('Index: glob', function () {
   })
 
   it('is case insensitive for the extension', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/IMG_0001.JPG': '...'
     })
     const options = {}
@@ -128,7 +114,7 @@ describe('Index: glob', function () {
   })
 
   it('ignores any folder starting with a dot', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/IMG_0001.jpg': '...',
       'media/.git/IMG_0002.jpg': '...',
       'media/nested/.private/IMG_0003.jpg': '...',
@@ -142,7 +128,7 @@ describe('Index: glob', function () {
   })
 
   it('ignores folders called @eaDir (Synology thumbnail folders)', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/holidays/IMG_0001.jpg': '...',
       'media/holidays/@eaDir/IMG_0001.jpg': '...'
     })
@@ -153,7 +139,7 @@ describe('Index: glob', function () {
   })
 
   it('ignores root folders called #recycle (Synology recycle bin)', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/holidays/IMG_0001.jpg': '...',
       'media/#recycle/IMG_0002.jpg': '...'
     })
@@ -164,7 +150,7 @@ describe('Index: glob', function () {
   })
 
   it('can specify an include pattern', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/work/IMG_0001.jpg': '...',
       'media/holidays/IMG_0002.jpg': '...'
     })
@@ -177,7 +163,7 @@ describe('Index: glob', function () {
   })
 
   it('can include deep subfolders', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/work/IMG_0001.jpg': '...',
       'media/holidays/venice/IMG_0002.jpg': '...'
     })
@@ -192,7 +178,7 @@ describe('Index: glob', function () {
   })
 
   it('can include nested subfolders', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/work/IMG_0001.jpg': '...',
       'media/holidays/venice/IMG_0002.jpg': '...'
     })
@@ -207,7 +193,7 @@ describe('Index: glob', function () {
   })
 
   it('can include a specific file by path', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/work/IMG_0001.jpg': '...',
       'media/holidays/venice/IMG_0002.jpg': '...'
     })
@@ -222,7 +208,7 @@ describe('Index: glob', function () {
   })
 
   it('can specify an exclude pattern', (done) => {
-    mock({
+    fixtures.createFiles({
       'media/work/IMG_0001.jpg': '...',
       'media/holidays/IMG_0002.jpg': '...'
     })
@@ -270,17 +256,19 @@ describe('Index: glob', function () {
     })
   })
 
-  it('ignores non-traversable directories', (done) => {
-    mock({
-      'media/secret': mock.directory({
-        mode: 0,
-        items: {
-          'IMG_0001.jpg': '...'
-        }
-      }),
+  it('ignores non-traversable directories', function (done) {
+    if (process.platform === 'win32' || process.getuid() === 0) {
+      // Windows doesn't use Unix permissions, and root can read any folder
+      return this.skip()
+    }
+    fixtures.createFiles({
+      'media/secret/IMG_0001.jpg': '...',
       'media/IMG_0002.jpg': '...'
     })
+    fs.chmodSync('media/secret', 0)
     glob.find('media', {}, (err, map) => {
+      // restore permissions so the temporary folder can be deleted
+      fs.chmodSync('media/secret', 0o755)
       if (err) return done(err)
       const keys = Object.keys(map).sort()
       should(keys).eql([
