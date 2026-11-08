@@ -1,8 +1,17 @@
-ARG REPO_OWNER=thumbsup
+# ------------------------------------------------
+# Runs the lint and test suite
+#
+#   docker build -f docker/Dockerfile.test .
+#   docker build -f docker/Dockerfile.test --build-arg NODE_VERSION=22 .
+# ------------------------------------------------
 ARG NODE_VERSION=26
+FROM node:${NODE_VERSION}-alpine
 
-# Node.js + build dependencies + runtime dependencies
-FROM ghcr.io/${REPO_OWNER}/thumbsup/build:node-${NODE_VERSION}
+# Build dependencies (better-sqlite3) + the same runtime tools as Dockerfile.release
+RUN apk add --no-cache git make g++ python3 bash
+RUN apk add --update --no-cache libgomp zlib libpng libjpeg-turbo libwebp tiff lcms2 x265 libde265 libheif
+RUN apk add --update --no-cache ffmpeg imagemagick imagemagick-heic imagemagick-jpeg imagemagick-webp imagemagick-tiff graphicsmagick exiftool gifsicle zip
+
 WORKDIR /app
 
 # Switch to a non-root user

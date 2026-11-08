@@ -1,40 +1,72 @@
 name: Publish Docker image
 
-on: 
+# Builds the image from this repository's source (docker/Dockerfile.release)
+# Tags: node22, node26 and latest (= node26)
+on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Publish NPM package"]
-    types:
-      - completed
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  publish:
+  preserve-node18:
+    # The original image (Node 18, published as 2.18.0) stays available as "node18"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: docker/setup-qemu-action@v1
-      - uses: docker/setup-buildx-action@v1
-      - uses: docker/login-action@v1 
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_PAT }}
-      - id: version
-        name: Fetch latest NPM version
-        run: echo ::set-output name=version::$(npm show thumbsup version)
-      - name: Publish Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: docker
-          file: ./docker/Dockerfile.release
-          build-args: | 
-            PACKAGE_VERSION=${{ steps.version.outputs.version }}
-            NODE_VERSION=26
-            REPO_OWNER=${{ github.repository_owner }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/thumbsup:${{ steps.version.outputs.version }}
-            ghcr.io/${{ github.repository_owner }}/thumbsup:latest
-          push: true
-          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=Docker image for thumbsup image and video gallery
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tag 2.18.0 as node18
+        run: |
+          IMAGE=ghcr.io/${{ github.repository_owner }}/thumbsup
+          if docker buildx imagetools inspect "$IMAGE:node18" >/dev/null 2>&1; then
+            echo "$IMAGE:node18 already exists"
+          elif docker buildx imagetools inspect "$IMAGE:2.18.0" >/dev/null 2>&1; then
+            docker buildx imagetools create -t "$IMAGE:node18" "$IMAGE:2.18.0"
+          else
+            echo "$IMAGE:2.18.0 not found, nothing to preserve"
+          fi
 
+  publish:
+    needs: preserve-node18
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - node: 22
+            # Node 22 is the last version with 32-bit ARM builds
+            platforms: linux/amd64,linux/arm64,linux/arm/v7
+            latest: false
+          - node: 26
+            platforms: linux/amd64,linux/arm64
+            latest: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/Dockerfile.release
+          build-args: |
+            NODE_VERSION=${{ matrix.node }}
+            REPO_OWNER=${{ github.repository_owner }}
+          platforms: ${{ matrix.platforms }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/thumbsup:node${{ matrix.node }}
+            ${{ matrix.latest && format('ghcr.io/{0}/thumbsup:latest', github.repository_owner) || '' }}
+          annotations: |
+            index:org.opencontainers.image.description=Docker image for thumbsup image and video gallery
+          cache-from: type=gha,scope=node${{ matrix.node }}
+          cache-to: type=gha,mode=max,scope=node${{ matrix.node }}
+          push: true

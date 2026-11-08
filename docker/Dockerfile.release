@@ -1,37 +1,47 @@
 # ------------------------------------------------
-# Builder image
+# thumbsup image, built from this repository's source
+#
+#   docker build -f docker/Dockerfile.release -t thumbsup:local .
+#   docker build -f docker/Dockerfile.release --build-arg NODE_VERSION=22 -t thumbsup:local-node22 .
 # ------------------------------------------------
-ARG REPO_OWNER=thumbsup
 ARG NODE_VERSION=26
-FROM ghcr.io/${REPO_OWNER}/thumbsup/build:node-${NODE_VERSION} AS build
 
-# Install thumbsup locally
+# ------------------------------------------------
+# Builder: compile native modules (better-sqlite3)
+# ------------------------------------------------
+FROM node:${NODE_VERSION}-alpine AS build
+RUN apk add --no-cache git make g++ python3 bash
 WORKDIR /thumbsup
-ARG PACKAGE_VERSION
-RUN if [ -z "${PACKAGE_VERSION}" ]; then \
-      echo "Please specify --build-arg PACKAGE_VERSION=<2.4.1>"; \
-      exit 1; \
-    fi;
-RUN echo '{"name": "installer", "version": "1.0.0"}' > package.json
-RUN npm install thumbsup@${PACKAGE_VERSION}
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY bin ./bin
+COPY src ./src
 
 # ------------------------------------------------
-# Runtime image
+# Runtime: exiftool, imagemagick, ffmpeg, gifsicle...
 # ------------------------------------------------
+FROM node:${NODE_VERSION}-alpine
 
-FROM ghcr.io/${REPO_OWNER}/thumbsup/runtime:node-${NODE_VERSION}
+ARG REPO_OWNER=thumbsup
+LABEL org.opencontainers.image.source="https://github.com/${REPO_OWNER}/thumbsup"
+LABEL org.opencontainers.image.description="Docker image for thumbsup image and video gallery"
 
-# Use tini as an init process
-# to ensure all child processes (ffmpeg...) are always terminated properly
-RUN apk add --update tini
+RUN apk add --update --no-cache libgomp zlib libpng libjpeg-turbo libwebp tiff lcms2 x265 libde265 libheif
+RUN apk add --update --no-cache ffmpeg imagemagick imagemagick-heic imagemagick-jpeg imagemagick-webp imagemagick-tiff graphicsmagick exiftool gifsicle zip tini
+
+# Add intel video acceleration driver if x86/amd64 architecture
+ARG TARGETARCH
+RUN if [ "${TARGETARCH}" = "amd64" ]; then \
+    apk add --update --no-cache intel-media-driver; \
+    fi
+
+# Ensure all child processes (ffmpeg...) are always terminated properly
 ENTRYPOINT ["tini", "-g", "--"]
 
 # Thumbsup can be run as any user and needs write-access to HOME
-ENV HOME /tmp
+ENV HOME=/tmp
 
-# Copy the thumbsup files to the new image
 COPY --from=build /thumbsup /thumbsup
-RUN ln -s /thumbsup/node_modules/.bin/thumbsup /usr/local/bin/thumbsup
+RUN ln -s /thumbsup/bin/thumbsup.js /usr/local/bin/thumbsup
 
-# Default command, should be overridden during <docker run>
 CMD ["thumbsup"]
