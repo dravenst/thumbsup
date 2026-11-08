@@ -25,6 +25,9 @@ exports.parse = (rootFolder, filePaths, concurrency) => {
 function merge (streams) {
   let ended = 0
   const merged = new stream.PassThrough({ objectMode: true })
+  // each piped stream adds its own close/drain/error listeners,
+  // so allow more than Node's default of 10 on machines with many CPUs
+  merged.setMaxListeners(streams.length + 10)
   streams.forEach(s => {
     s.pipe(merged, { end: false })
     s.once('end', () => {
