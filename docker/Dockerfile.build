@@ -2,7 +2,7 @@
 # This Docker image is used to speed up the builds
 # -------------------------------------------------
 
-ARG NODE_VERSION=22
+ARG NODE_VERSION=26
 ARG REPO_OWNER=thumbsup
 
 # Node.js + runtime dependencies

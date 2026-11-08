@@ -23,5 +23,5 @@ jobs:
           context: .
           file: ./docker/Dockerfile.test
           build-args: |
-            NODE_VERSION=22
+            NODE_VERSION=26
             REPO_OWNER=${{ github.repository_owner }}
